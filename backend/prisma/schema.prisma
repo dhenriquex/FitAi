@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js" 
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Goal {
+  perder_gordura
+  ganhar_massa_muscular
+  definir_corpo
+  aumentar_forca
+  melhorar_condicionamento
+  melhorar_saude
+  manter_peso
+  ganhar_resistencia
+  melhorar_mobilidade
+}
+
+enum ActivityLevel {
+  sedentario
+  pouco_ativo
+  moderadamente_ativo
+  ativo
+  muito_ativo
+  atleta
+}
+
+enum Experience {
+  iniciante
+  intermediario
+  avancado
+  especialista
+}
+
+enum Injury {
+  nenhuma
+  joelho
+  ombro
+  coluna
+  lombar
+  cervical
+  quadril
+  cotovelo
+  punho
+  tornozelo
+  tendinite
+  lesao_muscular
+  hernia_de_disco
+  outra
+}
+
+enum Gender {
+  male
+  female
+  nonBinary
+  nonInformation
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  firebaseUid String   @unique
+  name        String
+  email       String   @unique
+
+  profile     Profile?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Profile {
+  id               Int @id @default(autoincrement())
+
+  birthDate        DateTime
+
+  gender           Gender
+
+  height           Float
+  weight           Float
+
+  targetWeight     Float?
+
+  goal             Goal
+  activityLevel    ActivityLevel
+  experience       Experience
+
+  injuries         String?
+
+  userId           Int @unique
+  user             User @relation(fields:[userId], references:[id])
+}

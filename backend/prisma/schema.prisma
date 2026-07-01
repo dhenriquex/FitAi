@@ -21,7 +21,7 @@ enum Goal {
 }
 
 enum ActivityLevel {
-  sedentario
+  sedentarioj
   pouco_ativo
   moderadamente_ativo
   ativo
@@ -66,12 +66,14 @@ model User {
   name        String
   email       String   @unique
 
-  profile     Profile?
+  profile      Profile?
+  workoutPlans WorkoutPlan[]
+  sessions     Session[]
+  accounts     Account[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+   updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
+  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
 }
-
 model Profile {
   id               Int @id @default(autoincrement())
 
@@ -92,4 +94,110 @@ model Profile {
 
   userId           Int @unique
   user             User @relation(fields:[userId], references:[id])
+}
+model WorkoutPlan{
+  id String @id @default(uuid())
+  name String 
+  userId Int
+  isActive Boolean @default(true)
+   updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
+  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
+  coverImage String?
+  workoutDays WorkoutDay[]
+  user User @relation(fields:[userId], references:[id])
+}
+
+model WorkoutDay {
+  id                     String           @id @default(uuid())
+  name                   String
+  workoutPlanId          String
+  isRest                 Boolean          @default(false)
+  weekDay                WeekDay
+  updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
+  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
+  estimativeTimeInSecond Int
+  exercises              Exercise[]
+  workoutPlan            WorkoutPlan      @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  session                WorkoutSession[]
+}
+
+model Exercise {
+  id           String     @id @default(uuid())
+  name         String
+  order        Int
+  workoutDayId String
+  sets         Int
+  reps         Int
+  restTime     Int
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(6)
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime @db.Timestamptz(6)
+  token     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  ipAddress String?
+  userAgent String?
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                Int
+  providerType          String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(6)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @db.Timestamptz(6)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model WorkoutSession {
+  id           String     @id @default(uuid())
+  workoutDayId String
+  startedAt    DateTime   @db.Timestamptz(6)
+  completed    DateTime?  @db.Timestamptz(6)
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(6)
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+}
+
+enum WeekDay {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
 }

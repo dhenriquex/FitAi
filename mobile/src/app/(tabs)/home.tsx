@@ -1,35 +1,42 @@
+import { ConsistencySection } from "@/components/consistency";
+import {
+  CreateWorkoutBanner,
+  RestBanner,
+  WorkoutBanner,
+} from "@/components/workoutBanner";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { ImageBackground, StyleSheet, Text, View } from "react-native";
 
-const WEEKDAY_ORDER = [
-  "MONDAY",
-  "TUESDAY",
-  "WEDNESDAY",
-  "THURSDAY",
-  "FRIDAY",
-  "SATURDAY",
-  "SUNDAY",
-];
 type Profile = {
   id: number;
   weight: number;
   height: number;
-  goal: string;
   user: {
     name: string;
     email: string;
   };
 };
 export default function WorkoutPlanPage() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
-    async function loadProfiles() {
-      const response = await fetch("http://192.168.0.119:3000/api/profile");
-      const data = await response.json();
-      setProfiles(data);
+    async function loadProfile() {
+      try {
+        const response = await fetch("http://192.168.0.119:3000/api/profile");
+        const data = await response.json();
+
+        console.log("Resposta da API:", data);
+
+        setProfile(data);
+      } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-    loadProfiles();
+
+    loadProfile();
   }, []);
   return (
     <View style={styles.container}>
@@ -40,13 +47,14 @@ export default function WorkoutPlanPage() {
       >
         <View style={styles.overlay} />
 
-        {/* Título do app */}
         <Text style={styles.appTitle}>FIT.AI</Text>
         <View style={styles.bannerBottom}>
           <View style={styles.badge}>
             <Ionicons name="flag-outline" size={14} color="#000" />
             <Text style={styles.badgeText}>
-              {profiles[0]?.user.name.split(" ")[0]}
+              {isLoading
+                ? "Carregando..."
+                : (profile?.user.name.trim().split(/\s+/)[0] ?? "—")}
             </Text>
           </View>
           <View style={styles.lineText}>
@@ -55,6 +63,12 @@ export default function WorkoutPlanPage() {
           </View>
         </View>
       </ImageBackground>
+      <ConsistencySection />
+      <View style={styles.headlineContainer}>
+        <Text style={styles.title}>Treino de hoje</Text>
+        <Text style={styles.link}>Ver treinos</Text>
+      </View>
+      <RestBanner />
     </View>
   );
 }
@@ -131,5 +145,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     letterSpacing: 0.5,
     overflow: "hidden",
+  },
+  headlineContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    marginHorizontal: 16,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1A1A1A",
+  },
+  link: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#2B54FF",
   },
 });

@@ -115,11 +115,12 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-export async function GET(){
-  const profiles = await prisma.profile.findMany({
-    include:{
-      user:true,
+export async function GET() {
+  const profile = await prisma.profile.findFirst({
+    include: {
+      user: true,
     },
-});
-return NextResponse.json(profiles)
+  });
+
+  return NextResponse.json(profile);
 }

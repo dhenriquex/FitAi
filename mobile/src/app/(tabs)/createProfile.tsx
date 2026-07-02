@@ -29,32 +29,7 @@ import {
 import { createProfile, createUser } from "../../api/profile";
 import { ApiError } from "../../api/client";
 import { useRouter } from "expo-router";
-
-function SectionLabel({ children }: { children: string }) {
-  return <Text style={styles.sectionLabel}>{children}</Text>;
-}
-
-function Divider() {
-  return <View style={styles.divider} />;
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      {children}
-      {hint && <Text style={styles.hint}>{hint}</Text>}
-    </View>
-  );
-}
+import { SectionLabel, Divider, Field } from "@/components/sections";
 
 export default function ProfileRegisterPage() {
   const router = useRouter();
@@ -94,8 +69,6 @@ export default function ProfileRegisterPage() {
     setBirthDate(formatted);
   }
   async function handleSubmit() {
-
-    
     if (!name.trim()) return Alert.alert("Ops", "Informe seu nome.");
 
     const isoBirthDate = ddmmyyyyToIso(birthDate);

@@ -145,6 +145,25 @@ CREATE TABLE "WorkoutSession" (
     CONSTRAINT "WorkoutSession_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Measurement" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "chest" DOUBLE PRECISION NOT NULL,
+    "shoulder" DOUBLE PRECISION NOT NULL,
+    "neck" DOUBLE PRECISION NOT NULL,
+    "arm" DOUBLE PRECISION NOT NULL,
+    "forearm" DOUBLE PRECISION NOT NULL,
+    "waist" DOUBLE PRECISION NOT NULL,
+    "hip" DOUBLE PRECISION NOT NULL,
+    "calf" DOUBLE PRECISION NOT NULL,
+    "abdomen" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "Measurement_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_firebaseUid_key" ON "User"("firebaseUid");
 
@@ -186,3 +205,6 @@ ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "WorkoutSession" ADD CONSTRAINT "WorkoutSession_workoutDayId_fkey" FOREIGN KEY ("workoutDayId") REFERENCES "WorkoutDay"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Measurement" ADD CONSTRAINT "Measurement_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

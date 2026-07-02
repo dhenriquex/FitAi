@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js" 
+  provider = "prisma-client-js"
   output   = "../app/generated/prisma"
 }
 
@@ -61,50 +61,52 @@ enum Gender {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  firebaseUid String   @unique
-  name        String
-  email       String   @unique
-
+  id           Int           @id @default(autoincrement())
+  firebaseUid  String        @unique
+  name         String
+  email        String        @unique
+  measurements Measurement[]
   profile      Profile?
   workoutPlans WorkoutPlan[]
   sessions     Session[]
   accounts     Account[]
 
-   updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
-  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
 }
+
 model Profile {
-  id               Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  birthDate        DateTime
+  birthDate DateTime
 
-  gender           Gender
+  gender Gender
 
-  height           Float
-  weight           Float
+  height Float
+  weight Float
 
-  targetWeight     Float?
+  targetWeight Float?
 
-  goal             Goal
-  activityLevel    ActivityLevel
-  experience       Experience
+  goal          Goal
+  activityLevel ActivityLevel
+  experience    Experience
 
-  injuries         String?
+  injuries String?
 
-  userId           Int @unique
-  user             User @relation(fields:[userId], references:[id])
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
 }
-model WorkoutPlan{
-  id String @id @default(uuid())
-  name String 
-  userId Int
-  isActive Boolean @default(true)
-   updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
-  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
-  coverImage String?
+
+model WorkoutPlan {
+  id          String       @id @default(uuid())
+  name        String
+  userId      Int
+  isActive    Boolean      @default(true)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  coverImage  String?
   workoutDays WorkoutDay[]
-  user User @relation(fields:[userId], references:[id])
+  user        User         @relation(fields: [userId], references: [id])
 }
 
 model WorkoutDay {
@@ -200,4 +202,21 @@ enum WeekDay {
   Friday
   Saturday
   Sunday
+}
+
+model Measurement {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  chest     Float
+  shoulder  Float
+  neck      Float
+  arm       Float
+  forearm   Float
+  waist     Float
+  hip       Float
+  calf      Float
+  abdomen   Float
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id])
 }

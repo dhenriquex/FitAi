@@ -220,3 +220,20 @@ model Measurement {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   user      User     @relation(fields: [userId], references: [id])
 }
+model ExerciseLibraryItem {
+  id               String   @id
+  name             String
+  bodyPart         String
+  equipment        String
+  target           String
+  gifUrl           String?
+  secondaryMuscles String[]
+  instructions     String[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([bodyPart])
+  @@index([target])
+  @@index([equipment])
+}

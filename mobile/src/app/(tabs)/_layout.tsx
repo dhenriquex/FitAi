@@ -47,6 +47,16 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="createWorkout"
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarStyle: {
+            display: "none",
+          },
+        }}
+      />
 
       <Tabs.Screen
         name="about"

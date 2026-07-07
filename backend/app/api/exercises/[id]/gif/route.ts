@@ -8,40 +8,54 @@ const CACHE_DIR = path.join(process.cwd(), "cache", "gifs");
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
-  const cachePath = path.join(CACHE_DIR, `${id}.gif`);
+  try {
+    const { id } = await params;
 
-  if (existsSync(cachePath)) {
-    const buffer = await readFile(cachePath);
-    return new NextResponse(buffer, {
-      headers: { "Content-Type": "image/gif" },
-    });
-  }
+    const cachePath = path.join(CACHE_DIR, `${id}.gif`);
 
-  const response = await fetch(
-    `https://exercisedb.p.rapidapi.com/image?exerciseId=${id}&resolution=180`,
-    {
-      headers: {
-        "X-RapidAPI-Key": RAPIDAPI_KEY,
-        "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
-      },
+    if (existsSync(cachePath)) {
+      const buffer = await readFile(cachePath);
+      return new NextResponse(buffer, {
+        headers: {
+          "Content-Type": "image/gif",
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
     }
-  );
 
-  if (!response.ok) {
-    return NextResponse.json({ error: "GIF não encontrado" }, { status: 404 });
+    const response = await fetch(
+      `https://exercisedb.p.rapidapi.com/image?exerciseId=${id}&resolution=180`,
+      {
+        headers: {
+          "X-RapidAPI-Key": RAPIDAPI_KEY,
+          "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error(
+        `GIF não encontrado pro exercício ${id}: status ${response.status}`
+      );
+      return NextResponse.json({ error: "GIF não encontrado" }, { status: 404 });
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    await mkdir(CACHE_DIR, { recursive: true });
+    await writeFile(cachePath, buffer);
+
+    return new NextResponse(buffer, {
+      headers: {
+        "Content-Type": "image/gif",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  } catch (error) {
+    console.error("Erro ao buscar GIF:", error);
+    return NextResponse.json({ error: "Erro ao buscar GIF" }, { status: 500 });
   }
-
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-
-  await mkdir(CACHE_DIR, { recursive: true });
-  await writeFile(cachePath, buffer);
-
-  return new NextResponse(buffer, {
-    headers: { "Content-Type": "image/gif" },
-  });
 }

@@ -10,9 +10,10 @@ type Props<T> = {
   value: T | null;
   onChange: (v: T | null) => void;
   data: Option<T>[];
+  label?: string
 };
 
-export default function Options<T>({ value, onChange, data }: Props<T>) {
+export default function Options<T>({ value, onChange, data, label }: Props<T>) {
   return (
     <View style={styles.container}>
       <Picker
@@ -21,7 +22,7 @@ export default function Options<T>({ value, onChange, data }: Props<T>) {
         style={styles.picker}
         dropdownIconColor="#777"
       >
-        <Picker.Item label="Selecione uma opção" value={null} color="#999" />
+        <Picker.Item label={label ? label : "Selecione uma opção"} value={null} color="#999" />
 
         {data.map((g) => (
           <Picker.Item key={String(g.value)} label={g.label} value={g.value} />

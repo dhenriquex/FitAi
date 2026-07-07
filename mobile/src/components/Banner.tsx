@@ -11,26 +11,48 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
-export function WorkoutBanner() {
+type WorkoutBannerProps = {
+  dayLabel: string;
+  name: string;
+  minutes: number;
+  exerciseCount: number;
+  coverImage?: string | null;
+  onPress?: () => void;
+};
+
+export function WorkoutBanner({
+  dayLabel,
+  name,
+  minutes,
+  exerciseCount,
+  coverImage,
+  onPress,
+}: WorkoutBannerProps) {
   return (
-    <TouchableOpacity activeOpacity={0.85} style={styles.wrapper}>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      style={styles.wrapper}
+      onPress={onPress}
+    >
       <ImageBackground
-        source={require("../assets/login-bg.png")}
+        source={
+          coverImage ? { uri: coverImage } : require("../assets/login-bg.png")
+        }
         style={styles.imageBackground}
         imageStyle={styles.imageStyle}
       >
         <View style={styles.overlay}>
           <View style={styles.dayRow}>
             <Feather name="calendar" size={16} color="#FFFFFF" />
-            <Text style={styles.dayText}>Sexta</Text>
+            <Text style={styles.dayText}>{dayLabel}</Text>
           </View>
 
           <View style={styles.workoutInfo}>
-            <Text style={styles.workoutTitle}>Superiores</Text>
+            <Text style={styles.workoutTitle}>{name}</Text>
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                 <AntDesign name="field-time" size={14} color="#FFF" />
-                <Text style={styles.metaText}>45 min</Text>
+                <AntDesign name="field-time" size={14} color="#FFF" />
+                <Text style={styles.metaText}>{minutes} min</Text>
               </View>
               <View style={styles.metaItem}>
                 <MaterialCommunityIcons
@@ -38,7 +60,9 @@ export function WorkoutBanner() {
                   size={14}
                   color="#FFFFFF"
                 />
-                <Text style={styles.metaText}>5 exercícios</Text>
+                <Text style={styles.metaText}>
+                  {exerciseCount} exercício{exerciseCount !== 1 ? "s" : ""}
+                </Text>
               </View>
             </View>
           </View>
@@ -47,13 +71,16 @@ export function WorkoutBanner() {
     </TouchableOpacity>
   );
 }
+type RestBannerProps = {
+  dayLabel: string;
+};
 
-export function RestBanner() {
+export function RestBanner({ dayLabel }: RestBannerProps) {
   return (
     <View style={styles.restWrapper}>
       <View style={styles.dayRow}>
         <Feather name="calendar" size={16} color="#8A8A8A" />
-        <Text style={styles.restDayText}>Sexta</Text>
+        <Text style={styles.restDayText}>{dayLabel}</Text>
       </View>
 
       <View style={styles.restContent}>
@@ -63,10 +90,16 @@ export function RestBanner() {
     </View>
   );
 }
-
-export function CreateWorkoutBanner() {
+type CreateWorkoutBannerProps = {
+  onPress?: () => void;
+};
+export function CreateWorkoutBanner({ onPress }: CreateWorkoutBannerProps) {
   return (
-    <TouchableOpacity activeOpacity={0.7} style={styles.createWrapper}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={styles.createWrapper}
+      onPress={onPress}
+    >
       <View style={styles.createContent}>
         <FontAwesome6 name="add" size={18} color="#2B54FF" />
         <Text style={styles.createText}>Adicionar Treino</Text>
@@ -76,13 +109,12 @@ export function CreateWorkoutBanner() {
 }
 
 const styles = StyleSheet.create({
-  // WorkoutBanner
   wrapper: {
     borderRadius: 16,
     overflow: "hidden",
   },
   imageBackground: {
-    marginHorizontal:16,
+    marginHorizontal: 16,
     minHeight: 160,
     justifyContent: "flex-end",
   },
@@ -134,12 +166,12 @@ const styles = StyleSheet.create({
     padding: 16,
     minHeight: 140,
     justifyContent: "space-between",
-     marginHorizontal:16,
+    marginHorizontal: 16,
   },
   restDayText: {
     fontSize: 13,
     fontWeight: "600",
-   
+
     color: "#8A8A8A",
   },
   restContent: {
@@ -153,10 +185,9 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
   },
 
-
   createWrapper: {
     borderRadius: 16,
-    marginHorizontal:16,
+    marginHorizontal: 16,
     borderWidth: 1.5,
     borderColor: "#2B54FF",
     borderStyle: "dashed",

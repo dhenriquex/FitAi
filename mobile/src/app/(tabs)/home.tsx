@@ -1,12 +1,16 @@
 import { ConsistencySection } from "@/components/consistency";
-import {
-  CreateWorkoutBanner,
-  RestBanner,
-  WorkoutBanner,
-} from "@/components/workoutBanner";
+
 import { Ionicons } from "@expo/vector-icons";
+import { TodayWorkoutData } from "@/types/todayworkout";
 import { useEffect, useState } from "react";
-import { ImageBackground, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { TodayWorkoutSection } from "@/components/todayWorkoutBanner";
 
 type Profile = {
   id: number;
@@ -38,6 +42,7 @@ export default function WorkoutPlanPage() {
 
     loadProfile();
   }, []);
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -68,7 +73,7 @@ export default function WorkoutPlanPage() {
         <Text style={styles.title}>Treino de hoje</Text>
         <Text style={styles.link}>Ver treinos</Text>
       </View>
-      <RestBanner />
+     <TodayWorkoutSection/>
     </View>
   );
 }

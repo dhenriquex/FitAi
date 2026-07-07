@@ -1,11 +1,11 @@
-// scripts/seed-exercises.ts
+
 import { PrismaClient } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY!;
 const BASE_URL = "https://exercisedb.p.rapidapi.com";
-const PAGE_SIZE = 100; // tenta blocos maiores; se o provedor capar, cai pra 10 mesmo
+const PAGE_SIZE = 100; 
 
 type ExerciseDBItem = {
   id: string;
@@ -51,7 +51,7 @@ async function fetchAllExercises(): Promise<ExerciseDBItem[]> {
     }
 
     all.push(...page);
-    offset += page.length; // avança pela quantidade REAL retornada, não pelo PAGE_SIZE pedido
+    offset += page.length; 
 
     if (offset > 5000) {
       console.warn("Limite de segurança de offset atingido, parando.");

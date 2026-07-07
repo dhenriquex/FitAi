@@ -6,6 +6,16 @@ export type WeekDay =
   | "Friday"
   | "Saturday"
   | "Sunday";
+
+export const WEEKDAY_LABEL: Record<WeekDay, string> = {
+  Monday: "Segunda",
+  Tuesday: "Terça",
+  Wednesday: "Quarta",
+  Thursday: "Quinta",
+  Friday: "Sexta",
+  Saturday: "Sábado",
+  Sunday: "Domingo",
+};
 export type DayStatus = {
   day: WeekDay;
   active: boolean;

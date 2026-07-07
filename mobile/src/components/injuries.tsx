@@ -14,7 +14,24 @@ type Props<T> = {
 export default function Injuries<T>({ value, data, onChange }: Props<T>) {
 
   function toggleInjury(item: T) {
+    const selectedOption = data.find((opt) => opt.value === item);
+    const isNone = selectedOption?.label.toLowerCase().includes("nenhum");
+
+    if (isNone) {
+      if (value.has(item)) {
+        onChange(new Set());
+      } else {
+        onChange(new Set([item]));
+      }
+      return;
+    }
+
     const newValue = new Set(value);
+
+    const noneOption = data.find((opt) => opt.label.toLowerCase().includes("nenhum"));
+    if (noneOption && newValue.has(noneOption.value)) {
+      newValue.delete(noneOption.value);
+    }
 
     if (newValue.has(item)) {
       newValue.delete(item);

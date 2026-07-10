@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     height: 260,
     backgroundColor: "#F5F5F5",
   },
-  modalScroll: { padding: 20 },
+  modalScroll: { padding: 20, flexShrink: 1 },
   modalName: {
     fontSize: 20,
     fontWeight: "700",

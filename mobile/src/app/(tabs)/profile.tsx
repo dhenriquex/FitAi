@@ -9,7 +9,7 @@ import {
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { SectionLabel, Divider, Field } from "@/components/sections";
 import { calculateIMC, classifyIMC } from "@/helpers/IMC";
-type Profile = {
+export type Profile = {
   id: number;
   weight: number;
   height: number;

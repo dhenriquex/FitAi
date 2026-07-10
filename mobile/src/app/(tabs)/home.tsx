@@ -11,16 +11,8 @@ import {
   View,
 } from "react-native";
 import { TodayWorkoutSection } from "@/components/todayWorkoutBanner";
+import { Profile } from "@/types/profileTypes";
 
-type Profile = {
-  id: number;
-  weight: number;
-  height: number;
-  user: {
-    name: string;
-    email: string;
-  };
-};
 export default function WorkoutPlanPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);

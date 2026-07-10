@@ -6,11 +6,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
   Alert,
 } from "react-native";
 import Options from "@/components/Options";
-import { Picker } from "@react-native-picker/picker";
 import Injuries from "@/components/injuries";
 import {
   GOALS,

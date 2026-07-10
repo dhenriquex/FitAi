@@ -3,8 +3,8 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { WorkoutBanner, RestBanner, CreateWorkoutBanner } from "./Banner";
-import { WEEKDAY_LABEL } from "@/types/timeTypes";
-import { useTodayWorkout } from "../../useCases/useTodayWorkout";
+import { WEEKDAY_LABEL } from "@/constants/timeConstants";
+import { useTodayWorkout } from "../useCases/useTodayWorkout";
 
 export function TodayWorkoutSection() {
   const { data, isLoading, error } = useTodayWorkout();
@@ -42,7 +42,9 @@ export function TodayWorkoutSection() {
   }
 
   return (
-    <CreateWorkoutBanner onPress={() => router.push("/(tabs)/createWorkout")} />
+    <CreateWorkoutBanner
+      onPress={() => router.push("/(tabs)/chooseExercise")}
+    />
   );
 }
 

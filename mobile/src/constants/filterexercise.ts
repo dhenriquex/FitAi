@@ -1,26 +1,23 @@
 import { Equipment, MuscleGroup } from "./../types/filterExercise";
 export const MUSCLE_GROUPS: { value: MuscleGroup; label: string }[] = [
-  { value: "Todos", label: "Todos" },
-  { value: "Biceps", label: "Biceps" },
-  { value: "Triceps", label: "Triceps" },
-  { value: "Peitoral", label: "Peitoral" },
-  { value: "Costas", label: "Costas" },
-  { value: "Ombros", label: "Ombros" },
-  { value: "Quadriceps", label: "Quadriceps" },
-  { value: "Posterior", label: "Posterior" },
-  { value: "Gluteos", label: "Gluteos" },
-  { value: "Abdomen", label: "Abdomen" },
+
+  { value: "upper arms", label: "Braços" },
+  { value: "chest", label: "Peitoral" },
+  { value: "back", label: "Costas" },
+  { value: "shoulders", label: "Ombros" },
+  { value: "upper legs", label: "Pernas" },
+  { value: "lower legs", label: "Panturrilhas" },
+  { value: "waist", label: "Abdômen" },
 ];
 
 export const EQUIPMENTS: { value: Equipment; label: string }[] = [
-  { value: "Todos", label: "Todos" },
-  { value: "Halteres", label: "Halteres" },
-  { value: "Barra", label: "Barra" },
-  { value: "Peso Corporal", label: "Peso Corporal" },
-  { value: "Elastico", label: "Elastico" },
-  { value: "Eliptico", label: "Eliptico" },
-  { value: "Peso", label: "Peso" },
-  { value: "Bola", label: "Bola" },
-  { value: "Corda", label: "Corda" },
-  { value: "Pneu", label: "Pneu" },
+  { value: "dumbbell", label: "Halteres" },
+  { value: "barbell", label: "Barra" },
+  { value: "body weight", label: "Peso Corporal" },
+  { value: "band", label: "Elástico" },
+  { value: "elliptical machine", label: "Elíptico" },
+  { value: "weighted", label: "Peso" },
+  { value: "stability ball", label: "Bola" },
+  { value: "rope", label: "Corda" },
+  { value: "tire", label: "Pneu" },
 ];

@@ -17,7 +17,11 @@ export type ActivityLevel =
   | "muito_ativo"
   | "atleta";
 
-export type Experience = "iniciante" | "intermediario" | "avancado" | "especialista";
+export type Experience =
+  | "iniciante"
+  | "intermediario"
+  | "avancado"
+  | "especialista";
 
 export type Injury =
   | "nenhuma"
@@ -36,3 +40,13 @@ export type Injury =
   | "outra";
 
 export type Gender = "male" | "female" | "nonBinary" | "nonInformation";
+
+export type Profile = {
+  id: number;
+  weight: number;
+  height: number;
+  user: {
+    name: string;
+    email: string;
+  };
+};

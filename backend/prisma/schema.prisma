@@ -124,16 +124,38 @@ model WorkoutDay {
 }
 
 model Exercise {
-  id           String     @id @default(uuid())
-  name         String
-  order        Int
-  workoutDayId String
-  sets         Int
-  reps         Int
-  restTime     Int
-  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime   @updatedAt @db.Timestamptz(6)
-  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+  id                     String     @id @default(uuid())
+  name                   String
+  order                  Int
+  workoutDayId           String
+  sets                   Int
+  reps                   Int
+  restTime               Int
+  technique              String?
+  exerciseLibraryItemId  String?
+  createdAt              DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime   @updatedAt @db.Timestamptz(6)
+  workoutDay             WorkoutDay            @relation(fields: [workoutDayId], references: [id])
+  exerciseLibraryItem    ExerciseLibraryItem?  @relation(fields: [exerciseLibraryItemId], references: [id])
+}
+
+model ExerciseLibraryItem {
+  id               String     @id
+  name             String
+  bodyPart         String
+  equipment        String
+  target           String
+  gifUrl           String?
+  secondaryMuscles String[]
+  instructions     String[]
+  exercises        Exercise[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([bodyPart])
+  @@index([target])
+  @@index([equipment])
 }
 
 model Session {
@@ -220,20 +242,4 @@ model Measurement {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   user      User     @relation(fields: [userId], references: [id])
 }
-model ExerciseLibraryItem {
-  id               String   @id
-  name             String
-  bodyPart         String
-  equipment        String
-  target           String
-  gifUrl           String?
-  secondaryMuscles String[]
-  instructions     String[]
 
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([bodyPart])
-  @@index([target])
-  @@index([equipment])
-}

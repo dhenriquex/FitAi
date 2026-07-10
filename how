@@ -1,0 +1,29 @@
+[33mcommit 0e638bafb3818375419f9c215a43b6276aa6c5c4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Davi <davihga190@gmail.com>
+Date:   Tue Jul 7 14:07:47 2026 -0300
+
+    choose exercise
+
+[33mcommit 881dc941d86af40e84333acbf0257a7549cc6fa3[m
+Author: Davi <davihga190@gmail.com>
+Date:   Sun Jul 5 01:08:40 2026 -0300
+
+    workout components and exercise model db
+
+[33mcommit 10c7090533fa482f44664c7384088450a0a98751[m
+Author: Davi <davihga190@gmail.com>
+Date:   Wed Jul 1 22:20:33 2026 -0300
+
+    home(incompleted), compoments create, fix db model, consistency API
+
+[33mcommit 9f8d07879e31bd06f9ea44710d12bc918cac0389[m
+Author: Davi <davihga190@gmail.com>
+Date:   Wed Jul 1 11:10:30 2026 -0300
+
+    model database completed
+
+[33mcommit aafc0dd09b504cc56bcc49b091423315090d6b6d[m
+Author: Davi <davihga190@gmail.com>
+Date:   Wed Jul 1 10:29:46 2026 -0300
+
+    fix create profile

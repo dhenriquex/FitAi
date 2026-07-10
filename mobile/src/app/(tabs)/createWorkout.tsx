@@ -1,221 +1,291 @@
 // app/(tabs)/createWorkout.tsx
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "expo-router";
+import { useSelectionStore } from "../../useCases/useSelectionStore";
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
-  TextInput,
   View,
   FlatList,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  ImageBackground,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import Options from "@/components/Options";
-import { MuscleGroup, Equipment, Exercise } from "@/types/filterExercise";
-import { MUSCLE_GROUPS, EQUIPMENTS } from "@/constants/filterexercise";
-import ExerciseContent from "@/components/exercise";
+import { MaterialIcons } from "@expo/vector-icons";
+import Feather from "@expo/vector-icons/Feather";
+import WeekDaySelector from "../../components/weekdaySelector";
+import { WeekDay } from "@/types/timeTypes";
 
 const API_URL = "http://192.168.0.119:3000";
 
-const INITIAL_LIMIT = 10;
-const NEXT_LIMIT = 10;
-
 export default function CreateWorkout() {
-  const [equipament, setEquipament] = useState<Equipment | null>(null);
-  const [muscle, setMuscle] = useState<MuscleGroup | null>(null);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
-    new Set(),
-  );
+  const selectedMap = useSelectionStore((state) => state.selected);
+  const toggle = useSelectionStore((state) => state.toggle);
+  const clear = useSelectionStore((state) => state.clear);
+  const selectedExercises = Array.from(selectedMap.values());
+  const router = useRouter();
 
-  const toggleSelection = useCallback((id: string) => {
-    setSelectedExercises((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
+  const [workoutName, setWorkoutName] = useState("");
+  const [selectedDays, setSelectedDays] = useState<WeekDay[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  const canSubmit =
+    workoutName.trim().length > 0 &&
+    selectedDays.length > 0 &&
+    selectedExercises.length > 0 &&
+    !saving;
+
+  async function handleFinish() {
+    if (!canSubmit) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`${API_URL}/api/workout-plans`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: workoutName.trim(),
+          weekDays: selectedDays,
+          exercises: selectedExercises.map((ex) => ({
+            id: ex.id,
+            name: ex.name,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(errorBody?.error ?? `Status ${response.status}`);
       }
-      return newSet;
-    });
-  }, []);
 
-  const fetchingRef = useRef(false);
-
-
-
-  async function fetchPage(
-    baseUrl: string,
-    pageToFetch: number,
-    limit: number,
-  ) {
-    const response = await fetch(
-      `${baseUrl}/api/exercises?page=${pageToFetch}&limit=${limit}`,
-    );
-    if (!response.ok) throw new Error(`Status ${response.status}`);
-    return response.json();
+      clear();
+      Alert.alert("Sucesso", "Rotina criada com sucesso!");
+      router.push("/(tabs)/home");
+    } catch (error) {
+      console.error("Erro ao salvar rotina:", error);
+      Alert.alert("Erro", "Não foi possível salvar a rotina. Tente novamente.");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  useEffect(() => {
-    async function loadInitial() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await fetchPage(API_URL, 1, INITIAL_LIMIT);
-        setExercises(Array.isArray(data?.data) ? data.data : []);
-        setHasMore((data?.pagination?.pages ?? 1) > 1);
-      } catch (err) {
-        console.log("Falha ao carregar exercícios:", err);
-        setError("Não foi possível conectar à API de exercícios.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadInitial();
-  }, []);
-
-  const loadMore = useCallback(async () => {
-    if (
-      fetchingRef.current ||
-      loading ||
-      loadingMore ||
-      !hasMore
-    ) {
-      return;
-    }
-
-    fetchingRef.current = true;
-    setLoadingMore(true);
-
-    try {
-      const alreadyLoaded = exercises.length;
-      const nextPageForApi =
-        Math.floor((alreadyLoaded - INITIAL_LIMIT) / NEXT_LIMIT) + 2;
-
-      const data = await fetchPage(API_URL, nextPageForApi, NEXT_LIMIT);
-      const newItems: Exercise[] = Array.isArray(data?.data) ? data.data : [];
-
-      if (newItems.length === 0) {
-        setHasMore(false);
-      } else {
-        setExercises((prev) => [...prev, ...newItems]);
-        setHasMore(
-          alreadyLoaded + newItems.length < (data?.pagination?.total ?? 0),
-        );
-      }
-    } catch (err) {
-      console.log("Falha ao carregar mais exercícios:", err);
-    } finally {
-      setLoadingMore(false);
-      fetchingRef.current = false;
-    }
-  }, [exercises.length, hasMore, loading, loadingMore]);
-
-  const renderItem = useCallback(
-    ({ item }: { item: Exercise }) => {
-      const resolvedGifUrl = item.gifUrl
-        ? item.gifUrl.startsWith("http")
-          ? item.gifUrl
-          : `${API_URL}${item.gifUrl}`
-        : "";
-
-      const resolvedThumbnailUrl = `${API_URL}/api/exercises/${item.id}/thumbnail`;
-
-      return (
-        <ExerciseContent
-          name={item.name}
-          group={item.bodyPart ?? item.muscleGroup ?? "Sem grupo"}
-          secoundGroup={
-            item.secondaryMuscles?.[0] ?? item.secondMuscleGroup ?? ""
-          }
-          thumbnailUrl={resolvedThumbnailUrl}
-          gifUrl={resolvedGifUrl}
-          desc={
-            item.instructions?.join("\n") ??
-            item.description ??
-            "Sem instruções disponíveis."
-          }
-          isSelected={selectedExercises.has(item.id)}
-          onSelect={() => toggleSelection(item.id)}
-        />
-      );
-    },
-    [selectedExercises, toggleSelection],
-  );
-
-  const keyExtractor = useCallback((item: Exercise) => item.id, []);
-
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <TextInput style={styles.input} placeholder="Buscar exercício" />
-        <View style={styles.filtersContainer}>
-          <View style={{ flex: 1 }}>
-            <Options
-              value={equipament}
-              onChange={setEquipament}
-              data={EQUIPMENTS}
-              label="Equipamento"
-            />
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.avatarSection}>
+        <ImageBackground
+          source={require("../../assets/login-bg.png")}
+          style={styles.avatarButton}
+          imageStyle={styles.avatarImage}
+        >
+          <View style={styles.avatarOverlay}>
+            <View style={styles.avatarIconCircle}>
+              <MaterialIcons name="add-a-photo" size={22} color="#fff" />
+            </View>
+            <Text style={styles.avatarLabel}>Alterar foto</Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <Options
-              data={MUSCLE_GROUPS}
-              value={muscle}
-              onChange={setMuscle}
-              label="Músculo"
-            />
+        </ImageBackground>
+
+        <TextInput
+          style={styles.nameInput}
+          placeholder="Nome do treino"
+          placeholderTextColor="#A0A4AE"
+          value={workoutName}
+          onChangeText={setWorkoutName}
+        />
+      </View>
+
+      <View style={styles.daysSection}>
+        <Text style={styles.sectionTitle}>Dias da semana</Text>
+        <Text style={styles.sectionSubtitle}>
+          Em quais dias essa rotina estará disponível?
+        </Text>
+        <WeekDaySelector selected={selectedDays} onChange={setSelectedDays} />
+      </View>
+
+      <View style={styles.selectedSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Exercícios selecionados</Text>
+          <View style={styles.countBadge}>
+            <Text style={styles.countBadgeText}>{selectedExercises.length}</Text>
           </View>
         </View>
 
-        <FlatList
-          data={exercises}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          style={styles.list}
-          contentContainerStyle={styles.listContent}
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.5}
-          initialNumToRender={INITIAL_LIMIT}
-          maxToRenderPerBatch={10}
-          windowSize={7}
-          removeClippedSubviews
-          updateCellsBatchingPeriod={50}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>
-              {loading
-                ? "Carregando exercícios..."
-                : (error ?? "Nenhum exercício encontrado.")}
-            </Text>
-          }
-          ListFooterComponent={
-            loadingMore ? (
-              <ActivityIndicator style={{ marginVertical: 16 }} />
-            ) : null
-          }
-        />
+        {selectedExercises.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Feather name="inbox" size={28} color="#C7CAD4" />
+            <Text style={styles.emptyText}>Nenhum exercício selecionado ainda.</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={selectedExercises}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+            nestedScrollEnabled
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            renderItem={({ item, index }) => (
+              <View style={styles.exerciseRow}>
+                <View style={styles.exerciseIndex}>
+                  <Text style={styles.exerciseIndexText}>{index + 1}</Text>
+                </View>
+
+                <View style={styles.exerciseInfo}>
+                  <Text style={styles.exerciseName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  {item.target ? (
+                    <View style={styles.groupBadge}>
+                      <Text style={styles.groupBadgeText}>{item.target}</Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => toggle(item)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Feather name="x" size={16} color="red" />
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        )}
       </View>
-    </View>
+
+      <View style={styles.actionsContainer}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => router.push("/(tabs)/chooseExercise")}
+          activeOpacity={0.8}
+        >
+          <Feather name="plus" size={18} color="#2B54FF" />
+          <Text style={styles.secondaryButtonText}>Adicionar mais exercícios</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.primaryButton, !canSubmit && styles.primaryButtonDisabled]}
+          onPress={handleFinish}
+          activeOpacity={0.85}
+          disabled={!canSubmit}
+        >
+          {saving ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.primaryButtonText}>Finalizar treino</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7F8FC", paddingTop: 25 },
-  content: { flex: 1, paddingHorizontal: 16, paddingTop: 16, gap: 12 },
-  input: {
+  screen: { flex: 1, backgroundColor: "#F7F8FC" },
+  scrollContent: { paddingBottom: 40 },
+  avatarSection: { alignItems: "center", gap: 8, paddingHorizontal: 16 },
+  avatarButton: {
+    width: "100%",
+    marginTop: 24,
+    height: 140,
+    borderRadius: 20,
+    backgroundColor: "#ECEDF2",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  avatarImage: { borderRadius: 20 },
+  avatarOverlay: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 14, alignItems: "center", gap: 6 },
+  avatarIconCircle: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  avatarLabel: { fontSize: 12, fontWeight: "600", color: "#fff" },
+  nameInput: {
+    width: "100%",
+    marginTop: 4,
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#1A1A1A",
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-  filtersContainer: { gap: 8, flexDirection: "row" },
-  list: { flex: 1 },
-  listContent: { paddingBottom: 24 },
-  emptyText: { marginTop: 16, textAlign: "center", color: "#6B7280" },
+  daysSection: { marginTop: 24, paddingHorizontal: 16 },
+  sectionSubtitle: { fontSize: 12, color: "#9297A3", marginBottom: 12 },
+  selectedSection: { marginTop: 28, paddingHorizontal: 16 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#1A1A1A" },
+  countBadge: {
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 6,
+    borderRadius: 11,
+    backgroundColor: "#EEF1FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  countBadgeText: { fontSize: 12, fontWeight: "700", color: "#2B54FF" },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 32,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#EEF0F4",
+    borderStyle: "dashed",
+  },
+  emptyText: { color: "#9297A3", fontSize: 13 },
+  separator: { height: 8 },
+  exerciseRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 12,
+    borderBottomColor: "#EEF0F4",
+    borderBottomWidth: 1,
+  },
+  exerciseIndex: { width: 26, height: 26, borderRadius: 13, backgroundColor: "#F5F6FA", alignItems: "center", justifyContent: "center" },
+  exerciseIndexText: { fontSize: 12, fontWeight: "700", color: "#9297A3" },
+  exerciseInfo: { flex: 1, gap: 5 },
+  exerciseName: { fontSize: 14, fontWeight: "700", color: "#1A1A1A" },
+  groupBadge: { alignSelf: "flex-start", backgroundColor: "#EEF1FF", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
+  groupBadgeText: { fontSize: 11, fontWeight: "600", color: "#2B54FF" },
+  removeButton: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#F5F6FA", alignItems: "center", justifyContent: "center" },
+  actionsContainer: { marginTop: 28, paddingHorizontal: 16, gap: 12 },
+  secondaryButton: {
+    flexDirection: "row",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EEF1FF",
+  },
+  secondaryButtonText: { fontSize: 14, fontWeight: "700", color: "#2B54FF" },
+  primaryButton: {
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2B54FF",
+    shadowColor: "#2B54FF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  primaryButtonDisabled: { backgroundColor: "#C7CDF5", shadowOpacity: 0, elevation: 0 },
+  primaryButtonText: { fontSize: 15, fontWeight: "700", color: "#FFFFFF" },
 });

@@ -1,25 +1,22 @@
 export type MuscleGroup =
-  | "Todos"
-  | "Biceps"
-  | "Triceps"
-  | "Peitoral"
-  | "Costas"
-  | "Ombros"
-  | "Quadriceps"
-  | "Posterior"
-  | "Gluteos"
-  | "Abdomen";
+  | "upper arms"
+  | "chest"
+  | "back"
+  | "shoulders"
+  | "upper legs"
+  | "lower legs"
+  | "waist";
+
 export type Equipment =
-  | "Todos"
-  | "Halteres"
-  | "Barra"
-  | "Peso Corporal"
-  | "Elastico"
-  | "Eliptico"
-  | "Peso"
-  | "Bola"
-  | "Corda"
-  | "Pneu";
+  | "dumbbell"
+  | "barbell"
+  | "body weight"
+  | "band"
+  | "elliptical machine"
+  | "weighted"
+  | "stability ball"
+  | "rope"
+  | "tire";
 
 export type Exercise = {
   id: string;

@@ -11,7 +11,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
-type WorkoutBannerProps = {
+type Props = {
   dayLabel: string;
   name: string;
   minutes: number;
@@ -27,7 +27,7 @@ export function WorkoutBanner({
   exerciseCount,
   coverImage,
   onPress,
-}: WorkoutBannerProps) {
+}: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}

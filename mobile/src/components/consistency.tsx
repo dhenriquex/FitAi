@@ -1,7 +1,7 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { useConsistency } from "../../useCases/useConsistency";
+import { useConsistency } from "../useCases/useConsistency";
 
 import { WEEKDAY_ORDER } from "@/constants/timeConstants";
 

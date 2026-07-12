@@ -3,22 +3,22 @@ import { prisma } from "../../../lib/prisma";
 import { requireFirebaseUser, UnauthorizedError } from "../../../lib/auth";
 
 const WEEK_DAYS = [
+  "Sunday",
   "Monday",
   "Tuesday",
   "Wednesday",
   "Thursday",
   "Friday",
   "Saturday",
-  "Sunday",
 ] as const;
 
 type TodayWorkoutResponse =
   | {
       status: "workout";
       weekDay: string;
-      workoutDayId: number;
+      workoutDayId: string;
       name: string;
-      estimativeTimeInstructions: number;
+      estimativeTimeInSecond: number;
       exerciseCount: number;
       coverImage: string | null;
     }
@@ -47,15 +47,15 @@ export async function GET() {
       const body: TodayWorkoutResponse = { status: "no_plan" };
       return NextResponse.json(body);
     }
-     const todayWorkoutDay = activePlan.workoutDays[0];
-     if(!todayWorkoutDay) {
-      const body: TodayWorkoutResponse ={
-        status:"no_plan",
-        weekDay:today,
+    const todayWorkoutDay = activePlan.workoutDays[0];
+    if (!todayWorkoutDay) {
+      const body: TodayWorkoutResponse = {
+        status: "no_plan",
+        weekDay: today,
       };
       return NextResponse.json(body);
-     }
-     if (todayWorkoutDay.isRest) {
+    }
+    if (todayWorkoutDay.isRest) {
       const body: TodayWorkoutResponse = {
         status: "rest",
         weekDay: today,
@@ -65,15 +65,14 @@ export async function GET() {
     const body: TodayWorkoutResponse = {
       status: "workout",
       weekDay: today,
-      workoutDayId: parseInt(todayWorkoutDay.id),
+      workoutDayId: todayWorkoutDay.id,
       name: todayWorkoutDay.name,
-      estimativeTimeInstructions: todayWorkoutDay.estimativeTimeInSecond,
+      estimativeTimeInSecond: todayWorkoutDay.estimativeTimeInSecond,
       exerciseCount: todayWorkoutDay.exercises.length,
       coverImage: activePlan.coverImage,
     };
 
     return NextResponse.json(body);
-
   } catch (err) {
     console.error("Erro ao buscar treino de hoje:", err);
     return NextResponse.json(

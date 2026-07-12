@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useSelectionStore } from "../../useCases/useSelectionStore";
+import { getAuth } from "firebase/auth";
 import {
   StyleSheet,
   Text,
@@ -38,39 +39,52 @@ export default function CreateWorkout() {
     selectedExercises.length > 0 &&
     !saving;
 
-  async function handleFinish() {
-    if (!canSubmit) return;
 
-    setSaving(true);
-    try {
-      const response = await fetch(`${API_URL}/api/workout-plans`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: workoutName.trim(),
-          weekDays: selectedDays,
-          exercises: selectedExercises.map((ex) => ({
-            id: ex.id,
-            name: ex.name,
-          })),
-        }),
-      });
 
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
-        throw new Error(errorBody?.error ?? `Status ${response.status}`);
-      }
+async function handleFinish() {
+  if (!canSubmit) return;
 
-      clear();
-      Alert.alert("Sucesso", "Rotina criada com sucesso!");
-      router.push("/(tabs)/home");
-    } catch (error) {
-      console.error("Erro ao salvar rotina:", error);
-      Alert.alert("Erro", "Não foi possível salvar a rotina. Tente novamente.");
-    } finally {
-      setSaving(false);
+  setSaving(true);
+  try {
+    const user = getAuth().currentUser;
+    if (!user) {
+      Alert.alert("Erro", "Você precisa estar logado para salvar a rotina.");
+      return;
     }
+
+    const idToken = await user.getIdToken();
+
+    const response = await fetch(`${API_URL}/api/workout-plans`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({
+        name: workoutName.trim(),
+        weekDays: selectedDays,
+        exercises: selectedExercises.map((ex) => ({
+          id: ex.id,
+          name: ex.name,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      throw new Error(errorBody?.error ?? `Status ${response.status}`);
+    }
+
+    clear();
+    Alert.alert("Sucesso", "Rotina criada com sucesso!");
+    router.push("/(tabs)/home");
+  } catch (error) {
+    console.error("Erro ao salvar rotina:", error);
+    Alert.alert("Erro", "Não foi possível salvar a rotina. Tente novamente.");
+  } finally {
+    setSaving(false);
   }
+}
 
   return (
     <ScrollView

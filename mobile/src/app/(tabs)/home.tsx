@@ -47,7 +47,7 @@ export default function WorkoutPlanPage() {
         <Text style={styles.appTitle}>FIT.AI</Text>
         <View style={styles.bannerBottom}>
           <View style={styles.badge}>
-            <Ionicons name="flag-outline" size={14} color="#000" />
+            <Ionicons name="person-outline" size={14} color="#000" />
             <Text style={styles.badgeText}>
               {isLoading
                 ? "Carregando..."

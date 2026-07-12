@@ -32,7 +32,12 @@ export function TodayWorkoutSection() {
         minutes={Math.round(data.estimativeTimeInSecond / 60)}
         exerciseCount={data.exerciseCount}
         coverImage={data.coverImage}
-        onPress={() => router.push("/(tabs)/profile")}
+        onPress={() =>
+          router.push({
+            pathname: "/(tabs)/workout",
+            params: { dayId: data.workoutDayId },
+          })
+        }
       />
     );
   }

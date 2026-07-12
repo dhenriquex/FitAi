@@ -93,7 +93,6 @@ function ExerciseContent({
               <Feather name="x" size={22} color="#1A1A1A" />
             </TouchableOpacity>
 
-            {/* gif animado só existe na árvore quando o modal está aberto */}
             {isModalVisible && (
               <Image
                 source={{ uri: gifUrl || fallback }}

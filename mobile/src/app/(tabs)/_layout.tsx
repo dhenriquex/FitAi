@@ -28,7 +28,20 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="workoutPlan"
+
+        options={{
+          title: "Planos",
+
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="createProfile"
+
         options={{
           headerShown: false,
           tabBarButton: () => null,
@@ -41,9 +54,20 @@ export default function TabsLayout() {
         name="chooseExercise"
         options={{
           headerShown: false,
+          title: "Criar",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="add-outline" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="workout"
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarStyle: {
+            display: "none",
+          },
         }}
       />
       <Tabs.Screen

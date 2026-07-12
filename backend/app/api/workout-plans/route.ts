@@ -1,13 +1,13 @@
 // app/api/workout-plans/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
-
+import { requireFirebaseUser, UnauthorizedError } from "../../lib/auth";
 type CreateWorkoutPlanBody = {
   name: string;
   coverImage?: string | null;
-  weekDays: string[]; // ex: ["Monday", "Wednesday"]
+  weekDays: string[];
   exercises: {
-    id: string; // ExerciseLibraryItem.id
+    id: string;
     name: string;
     sets?: number;
     reps?: number;
@@ -16,14 +16,17 @@ type CreateWorkoutPlanBody = {
   }[];
 };
 
-const DEFAULT_SETS = 3;
-const DEFAULT_REPS = 12;
+const DEFAULT_SETS = 1;
+const DEFAULT_REPS = 0;
 const DEFAULT_REST_TIME = 60; // segundos
 const DEFAULT_TECHNIQUE = "Padrão";
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // TODO: trocar por userId real vindo do token do Firebase
-    const user = await prisma.user.findFirst();
+    const firebaseUser = await requireFirebaseUser(request);
+
+    const user = await prisma.user.findUnique({
+      where: { firebaseUid: firebaseUser.uid },
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -55,8 +58,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Estima o tempo do treino: soma de (séries * (tempo de execução + descanso))
-    const EXECUTION_TIME_PER_SET = 30; // segundos, estimativa fixa por série
+    const EXECUTION_TIME_PER_SET = 30;
     const estimativeTimeInSecond = body.exercises.reduce((total, ex) => {
       const sets = ex.sets ?? DEFAULT_SETS;
       const restTime = ex.restTime ?? DEFAULT_REST_TIME;
@@ -72,7 +74,7 @@ export async function POST(request: Request) {
         workoutDays: {
           create: body.weekDays.map((weekDay) => ({
             name: body.name.trim(),
-            weekDay: weekDay as any, // validado abaixo antes de chegar aqui
+            weekDay: weekDay as any,
             isRest: false,
             estimativeTimeInSecond,
             exercises: {
@@ -90,23 +92,60 @@ export async function POST(request: Request) {
         },
       },
       include: {
-        workoutDays: {
-          include: { exercises: true },
-        },
+        workoutDays: { include: { exercises: true } },
       },
     });
 
     return NextResponse.json(workoutPlan, { status: 201 });
   } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
     console.error("Erro ao criar rotina de treino:", error);
-
-    // Em desenvolvimento, devolve a mensagem real do erro pro front mostrar
     const isDev = process.env.NODE_ENV !== "production";
     const message =
       isDev && error instanceof Error
         ? error.message
         : "Erro ao criar rotina de treino";
-
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const firebaseUser = await requireFirebaseUser(req);
+
+    const user = await prisma.user.findUnique({
+      where: { firebaseUid: firebaseUser.uid },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 },
+      );
+    }
+
+    const plans = await prisma.workoutPlan.findMany({
+      where: { userId: user.id },
+      include: {
+        workoutDays: {
+          include: { exercises: { select: { id: true } } },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json(plans);
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    console.error("Erro ao buscar planos de treino:", error);
+    return NextResponse.json(
+      { error: "Erro ao buscar treinos" },
+      { status: 500 },
+    );
   }
 }

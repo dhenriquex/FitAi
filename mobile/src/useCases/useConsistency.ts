@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import { get } from "@/api/client";
 import { ApiError } from "@/api/client";
 import { DayStatus, ConsistencyData, UseConsistencyResult} from "@/types/timeTypes";
@@ -10,36 +11,38 @@ export function useConsistency(): UseConsistencyResult {
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
 
-    async function fetch() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await get<ConsistencyData>("/api/consistency");
-        if (!cancelled) {
-          setWeekData(data.weekData);
-          setStreak(data.streak);
+      async function fetchData() {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const data = await get<ConsistencyData>("/api/consistency");
+          if (!cancelled) {
+            setWeekData(data.weekData);
+            setStreak(data.streak);
+          }
+        } catch (err) {
+          if (!cancelled) {
+            const message =
+              err instanceof ApiError
+                ? err.message
+                : "Erro ao carregar consistência";
+            setError(message);
+          }
+        } finally {
+          if (!cancelled) setIsLoading(false);
         }
-      } catch (err) {
-        if (!cancelled) {
-          const message =
-            err instanceof ApiError
-              ? err.message
-              : "Erro ao carregar consistência";
-          setError(message);
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
       }
-    }
 
-    fetch();
-    return () => {
-      cancelled = true;
-    };
-  }, [tick]);
+      fetchData();
+      return () => {
+        cancelled = true;
+      };
+    }, [tick])
+  );
 
   return {
     weekData,

@@ -89,6 +89,7 @@ export default function ChooseExercises() {
     return response.json();
   }
 
+  // carga inicial
   useEffect(() => {
     const filters: Filters = {
       search: debouncedSearch,
@@ -110,7 +111,7 @@ export default function ChooseExercises() {
         if (currentRequestId !== requestIdRef.current) return;
 
         setExercises(Array.isArray(data?.data) ? data.data : []);
-        setHasMore(Boolean(data?.pagination?.hasMore));
+        setHasMore(Boolean(data?.pagination?.hasMore)); // <- usa hasMore direto
       } catch (err) {
         if (currentRequestId !== requestIdRef.current) return;
         console.log("Falha ao carregar exercícios:", err);
@@ -123,6 +124,7 @@ export default function ChooseExercises() {
     void loadFiltered();
   }, [debouncedSearch, equipament, muscle]);
 
+  // loadMore
   const loadMore = useCallback(async () => {
     if (fetchingRef.current || loading || loadingMore || !hasMore) return;
 
@@ -146,12 +148,8 @@ export default function ChooseExercises() {
 
       const newItems: Exercise[] = Array.isArray(data?.data) ? data.data : [];
 
-      if (newItems.length === 0) {
-        setHasMore(false);
-      } else {
-        setExercises((prev) => [...prev, ...newItems]);
-        setHasMore(Boolean(data?.pagination?.hasMore));
-      }
+      setExercises((prev) => [...prev, ...newItems]);
+      setHasMore(Boolean(data?.pagination?.hasMore)); // <- usa hasMore direto
     } catch (err) {
       console.log("Falha ao carregar mais exercícios:", err);
     } finally {

@@ -124,19 +124,21 @@ model WorkoutDay {
 }
 
 model Exercise {
-  id                     String     @id @default(uuid())
-  name                   String
-  order                  Int
-  workoutDayId           String
-  sets                   Int
-  reps                   Int
-  restTime               Int
-  technique              String?
-  exerciseLibraryItemId  String?
-  createdAt              DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime   @updatedAt @db.Timestamptz(6)
-  workoutDay             WorkoutDay            @relation(fields: [workoutDayId], references: [id])
-  exerciseLibraryItem    ExerciseLibraryItem?  @relation(fields: [exerciseLibraryItemId], references: [id])
+  id                    String                   @id @default(uuid())
+  name                  String
+  order                 Int
+  workoutDayId          String
+  sets                  Int
+  reps                  Int
+  restTime              Int
+  weight                Float?
+  technique             String?
+  exerciseLibraryItemId String?
+  createdAt             DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime                 @updatedAt @db.Timestamptz(6)
+  workoutDay            WorkoutDay               @relation(fields: [workoutDayId], references: [id])
+  exerciseLibraryItem   ExerciseLibraryItem?     @relation(fields: [exerciseLibraryItemId], references: [id])
+  sessionExercises      WorkoutSessionExercise[] // <- linha nova
 }
 
 model ExerciseLibraryItem {
@@ -207,13 +209,39 @@ model Verification {
 }
 
 model WorkoutSession {
-  id           String     @id @default(uuid())
+  id           String                   @id @default(uuid())
   workoutDayId String
-  startedAt    DateTime   @db.Timestamptz(6)
-  completed    DateTime?  @db.Timestamptz(6)
-  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime   @updatedAt @db.Timestamptz(6)
-  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+  startedAt    DateTime                 @db.Timestamptz(6)
+  completed    DateTime?                @db.Timestamptz(6)
+  createdAt    DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                 @updatedAt @db.Timestamptz(6)
+  workoutDay   WorkoutDay               @relation(fields: [workoutDayId], references: [id])
+  exercises    WorkoutSessionExercise[] // <- linha nova
+}
+
+model WorkoutSessionExercise {
+  id               String   @id @default(uuid())
+  workoutSessionId String
+  exerciseId       String
+  name             String
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+
+  workoutSession WorkoutSession      @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exercise       Exercise            @relation(fields: [exerciseId], references: [id])
+  sets           WorkoutSessionSet[]
+}
+
+model WorkoutSessionSet {
+  id                       String  @id @default(uuid())
+  workoutSessionExerciseId String
+  order                    Int
+  reps                     Int
+  restTime                 Int
+  weight                   Float?
+  technique                String
+  completed                Boolean @default(false)
+
+  workoutSessionExercise WorkoutSessionExercise @relation(fields: [workoutSessionExerciseId], references: [id], onDelete: Cascade)
 }
 
 enum WeekDay {
@@ -242,4 +270,3 @@ model Measurement {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   user      User     @relation(fields: [userId], references: [id])
 }
-

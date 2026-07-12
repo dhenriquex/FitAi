@@ -45,6 +45,7 @@ export type Profile = {
   id: number;
   weight: number;
   height: number;
+  goal?: Goal;
   user: {
     name: string;
     email: string;
